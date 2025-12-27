@@ -1,47 +1,54 @@
-from flask import Flask, request, render_template_string
-import random
+
+from flask import Flask, request, redirect
 
 app = Flask(__name__)
 
-HTML = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AfroBlade</title>
-    <style>
-        body {font-family: Arial; background:#0f172a; color:white; text-align:center;}
-        input,button{padding:10px;border-radius:6px;border:none;}
-        button{background:#22c55e;color:black;font-weight:bold;}
-        .box{background:#020617;padding:20px;margin:20px;border-radius:10px;}
-    </style>
-</head>
-<body>
-    <h1>AfroBlade Analytics</h1>
-    <form method="POST">
-        <input name="page" placeholder="Facebook Page Name" required>
-        <button>ANALYSER</button>
-    </form>
-    {% if page %}
-    <div class="box">
-        <h2>{{page}}</h2>
-        Followers: {{followers}}<br>
-        Views: {{views}}<br>
-        Est. Earnings: {{money}} $
-    </div>
-    {% endif %}
-</body>
-</html>
-"""
+users = []
+messages = []
 
-@app.route("/", methods=["GET","POST"])
+@app.route("/")
 def home():
-    page = None
-    followers = views = money = 0
-    if request.method == "POST":
-        page = request.form["page"]
-        followers = random.randint(1000,5000000)
-        views = random.randint(5000,20000000)
-        money = round(views * 0.001,2)
-    return render_template_string(HTML, page=page, followers=followers, views=views, money=money)
+    return """
+    <h1>AfroBlade</h1>
+    <p>Bienvenue sur AfroBlade.</p>
+    <a href='/register'>Créer un compte</a><br><br>
+    <a href='/contact'>Contact</a>
+    """
 
-app.run(host="0.0.0.0", port=8080
+@app.route("/register", methods=["GET","POST"])
+def register():
+    if request.method == "POST":
+        users.append({
+            "name": request.form["name"],
+            "email": request.form["email"],
+            "password": request.form["password"]
+        })
+        return "<h2>Compte créé avec succès</h2><a href='/'>Retour</a>"
+    return """
+    <h2>Créer un compte</h2>
+    <form method='POST'>
+        <input name='name' placeholder='Nom'><br>
+        <input name='email' placeholder='Email'><br>
+        <input name='password' placeholder='Mot de passe' type='password'><br><br>
+        <button>Créer</button>
+    </form>
+    """
+
+@app.route("/contact", methods=["GET","POST"])
+def contact():
+    if request.method == "POST":
+        messages.append({
+            "name": request.form["name"],
+            "msg": request.form["message"]
+        })
+        return "<h2>Message envoyé ✔️</h2><a href='/'>Retour</a>"
+    return """
+    <h2>Contact</h2>
+    <form method='POST'>
+        <input name='name' placeholder='Votre nom'><br>
+        <textarea name='message' placeholder='Votre message'></textarea><br><br>
+        <button>Envoyer</button>
+    </form>
+    """
+
+app.run(host="0.0.0.0", port=8080)
